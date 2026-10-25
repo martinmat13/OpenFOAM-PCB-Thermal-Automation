@@ -3,8 +3,7 @@
 This tutorial explains the physics and numerical choices behind the OpenFOAM
 case in this repository. It follows the case from thermodynamics, through heat
 transfer and conjugate heat transfer (CHT), to the solver and its numerical
-controls. The equations use GitHub-flavoured Markdown math delimiters
-(`$...$` inline and `$$...$$` for display equations).
+controls.
 
 The reference case uses a 35 W silicon die, an FR4 board, an aluminium
 heatsink, and buoyancy-driven air in a small closed enclosure. Its properties
