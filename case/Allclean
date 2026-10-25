@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+rm -rf 0 constant/polyMesh constant/triSurface \
+    constant/cellToRegion \
+    constant/air/polyMesh constant/domain0/polyMesh constant/pcb/polyMesh \
+    constant/cpu/polyMesh constant/aluminum/polyMesh \
+    postProcessing
+rm -f log.blockMesh log.snappyHexMesh log.splitMeshRegions \
+    log.createZeroDirectory log.checkMesh log.chtMultiRegionSimpleFoam
+rm -f system/domain0/fvSchemes system/domain0/fvSolution \
+    system/pcb/fvSchemes system/pcb/fvSolution \
+    system/cpu/fvSchemes system/cpu/fvSolution \
+    system/aluminum/fvSchemes system/aluminum/fvSolution
+
+if command -v foamListTimes >/dev/null 2>&1; then
+    foamListTimes -rm >/dev/null
+fi

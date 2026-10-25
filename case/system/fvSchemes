@@ -1,0 +1,12 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 common steady CHT discretization                       |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                    // Standard dictionary format version.
+    format ascii;                   // Human-readable numerical schemes.
+    class dictionary;               // fvSchemes dictionary class.
+    object fvSchemes;               // Required object name.
+}
+
+#include "fvSchemesContents"       // Share identical schemes across every region.

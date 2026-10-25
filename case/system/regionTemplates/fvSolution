@@ -1,0 +1,12 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Shared region solution settings for OpenFOAM.com v2512                    |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                   // Standard dictionary format version.
+    format ascii;                  // Readable solver controls.
+    class dictionary;              // fvSolution dictionary class.
+    object fvSolution;              // Required object name.
+}
+
+#include "../fvSolutionContents"  // Relative path from system/<region>/ to shared controls.

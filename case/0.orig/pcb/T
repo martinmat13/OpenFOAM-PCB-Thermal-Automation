@@ -1,0 +1,36 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Initial PCB temperature field                                               |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard field format version.
+    format ascii;                 // Text field for review.
+    class volScalarField;         // Temperature is a cell-centred scalar.
+    object T;                     // Required solid temperature field.
+}
+
+dimensions [0 0 0 1 0 0 0];        // Temperature dimensions in kelvin.
+internalField uniform 300;         // Initialize the FR4 board at ambient temperature.
+boundaryField
+{
+    pcb_to_domain0
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple the board to enclosure air.
+        Tnbr T;                    // Adjacent fluid temperature field name.
+        kappaMethod solidThermo;   // Use local FR4 conductivity on the solid side.
+        qr none;                   // Exclude radiation.
+        qrNbr none;                // No radiative neighbour field exists.
+        useImplicit true;          // Couple interface heat flux implicitly.
+        value uniform 300;         // Initial coupled-patch temperature.
+    }
+    pcb_to_cpu
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple the die to its board footprint.
+        Tnbr T;                    // Adjacent silicon field name.
+        kappaMethod solidThermo;   // Use FR4 conductivity on this side of the interface.
+        qr none;                   // Exclude radiation.
+        qrNbr none;                // No radiative neighbour field exists.
+        useImplicit true;          // Stabilize the high-conductivity contact.
+        value uniform 300;         // Initial interface temperature.
+    }
+}

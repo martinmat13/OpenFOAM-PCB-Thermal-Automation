@@ -1,0 +1,16 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 region assignment                                      |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard dictionary format version.
+    format ascii;                 // Human-readable region declarations.
+    class dictionary;             // Region-property dictionary class.
+    object regionProperties;      // Required object name for multi-region solvers.
+}
+
+regions
+(
+    fluid (domain0)               // splitMeshRegions names the un-zoned enclosure fluid region domain0.
+    solid (pcb cpu aluminum)      // FR4, silicon and aluminium use distinct material models.
+);

@@ -1,0 +1,36 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Initial heatsink temperature field                                           |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard field format version.
+    format ascii;                 // Text field for review.
+    class volScalarField;         // Temperature is a cell-centred scalar.
+    object T;                     // Required solid temperature field.
+}
+
+dimensions [0 0 0 1 0 0 0];        // Temperature dimensions in kelvin.
+internalField uniform 300;         // Start the complete aluminium base and fin region at ambient.
+boundaryField
+{
+    aluminum_to_domain0
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple all exposed sink surfaces to air.
+        Tnbr T;                    // Adjacent air temperature field name.
+        kappaMethod solidThermo;   // Use aluminium conductivity on the solid side.
+        qr none;                   // Radiation is excluded from this reference case.
+        qrNbr none;                // No radiative neighbour field exists.
+        useImplicit true;          // Stabilize the high-conductivity metal-air coupling.
+        value uniform 300;         // Initial interface value.
+    }
+    aluminum_to_cpu
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple the base to the silicon package.
+        Tnbr T;                    // Adjacent CPU temperature field name.
+        kappaMethod solidThermo;   // Use aluminium conductivity on the heatsink side.
+        qr none;                   // Radiation is excluded.
+        qrNbr none;                // No radiative neighbour field exists.
+        useImplicit true;          // Enforce a stable solid-solid heat transfer coupling.
+        value uniform 300;         // Initial interface temperature.
+    }
+}

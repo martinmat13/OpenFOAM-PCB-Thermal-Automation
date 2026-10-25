@@ -1,0 +1,20 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Initial thermodynamic pressure field                                       |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard field format version.
+    format ascii;                 // Text field for review.
+    class volScalarField;         // Pressure is a cell-centred scalar.
+    object p;                     // Thermodynamic pressure field.
+}
+
+dimensions [1 -1 -2 0 0 0 0];      // Pressure dimensions in pascals.
+internalField uniform 101325;      // Initialize at standard near-sea-level ambient pressure.
+boundaryField
+{
+    ambientWalls { type zeroGradient; } // The sealed walls admit no imposed pressure value.
+    domain0_to_pcb { type zeroGradient; } // No fluid pressure gradient is prescribed into solid.
+    domain0_to_cpu { type zeroGradient; } // No fluid pressure gradient is prescribed into solid.
+    domain0_to_aluminum { type zeroGradient; } // No fluid pressure gradient is prescribed into solid.
+}

@@ -1,0 +1,24 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Initial reduced-pressure field                                             |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard field format version.
+    format ascii;                 // Text field for review.
+    class volScalarField;         // Reduced pressure is a cell-centred scalar.
+    object p_rgh;                 // Pressure variable used by the buoyant solver.
+}
+
+dimensions [1 -1 -2 0 0 0 0];      // Pressure dimensions in pascals.
+internalField uniform 101325;      // Initialize from ambient pressure as in v2512 buoyant cases.
+boundaryField
+{
+    ambientWalls
+    {
+        type fixedFluxPressure;   // Preserve the no-penetration velocity condition at walls.
+        value uniform 101325;     // Seed the pressure patch at the ambient level.
+    }
+    domain0_to_pcb { type zeroGradient; } // Do not impose flow through the solid interface.
+    domain0_to_cpu { type zeroGradient; } // Do not impose flow through the solid interface.
+    domain0_to_aluminum { type zeroGradient; } // Do not impose flow through the solid interface.
+}

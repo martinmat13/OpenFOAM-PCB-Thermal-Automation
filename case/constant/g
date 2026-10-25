@@ -1,0 +1,13 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 gravity vector                                          |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard dictionary format version.
+    format ascii;                 // Readable uniform field.
+    class uniformDimensionedVectorField; // Gravity is a physical vector, not a mesh field.
+    object g;                     // Required gravity-field object name.
+}
+
+dimensions [0 1 -2 0 0 0 0];      // Acceleration dimensions: length per time squared.
+value (0 0 -9.81);                // z is vertical in this case; gravity points down.

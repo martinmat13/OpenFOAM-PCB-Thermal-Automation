@@ -1,0 +1,40 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 dry-air model                                           |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard dictionary format version.
+    format ascii;                 // Human-readable material properties.
+    class dictionary;             // Thermophysical model dictionary.
+    object thermophysicalProperties; // Solver-required object name.
+}
+
+thermoType
+{
+    type heRhoThermo;             // Compressible enthalpy thermo for buoyant air.
+    mixture pureMixture;          // Treat dry air as one effective species.
+    transport const;              // Constant transport data for a baseline study.
+    thermo hConst;                // Constant specific heat is adequate near ambient.
+    equationOfState perfectGas;   // Capture temperature-dependent density in buoyancy.
+    specie specie;                // Use a single-species mixture.
+    energy sensibleEnthalpy;      // Solve sensible enthalpy with no formation-heat term.
+}
+
+mixture
+{
+    specie
+    {
+        nMoles 1;                 // One mole basis for the effective air species.
+        molWeight 28.97;           // Dry-air molecular weight in kg/kmol.
+    }
+    thermodynamics
+    {
+        Cp 1006;                   // Representative air heat capacity in J/(kg K).
+        Hf 0;                      // Reference formation enthalpy is irrelevant here.
+    }
+    transport
+    {
+        mu 1.846e-5;               // Dynamic viscosity near 300 K in Pa s.
+        Pr 0.707;                  // Prandtl number near room temperature.
+    }
+}

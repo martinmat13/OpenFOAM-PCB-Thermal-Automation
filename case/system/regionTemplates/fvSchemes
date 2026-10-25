@@ -1,0 +1,12 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Shared region discretization for OpenFOAM.com v2512                       |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                   // Standard dictionary format version.
+    format ascii;                  // Human-readable numerical schemes.
+    class dictionary;              // fvSchemes dictionary class.
+    object fvSchemes;              // Required object name.
+}
+
+#include "../fvSchemesContents"   // Relative path from system/<region>/ to the shared entries.

@@ -1,0 +1,162 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 reference CHT case                                    |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard dictionary format version.
+    format ascii;                 // Human-readable mesh settings.
+    class dictionary;             // snappyHexMesh dictionary class.
+    object snappyHexMeshDict;     // Required object name.
+}
+
+castellatedMesh true;             // Cut the background mesh around closed solid STLs.
+snap true;                        // Project cut faces onto the exact CAD triangles.
+addLayers false;                  // Keep split CHT interfaces conformal for the baseline.
+
+geometry
+{
+    pcb.stl
+    {
+        type triSurfaceMesh;      // Closed triangulated solid surface.
+        name pcb;                 // Used as the mesh patch and cell-zone name.
+    }
+    cpu.stl
+    {
+        type triSurfaceMesh;      // Closed silicon package surface.
+        name cpu;                 // Separates the powered silicon from PCB and sink.
+    }
+    aluminumBase.stl
+    {
+        type triSurfaceMesh;      // Closed aluminium base surface.
+        name aluminumBase;        // Material zone is assigned below.
+    }
+    fin0.stl { type triSurfaceMesh; name fin0; } // First fin; separate CAD surface for refinement.
+    fin1.stl { type triSurfaceMesh; name fin1; } // Second fin; separate CAD surface for refinement.
+    fin2.stl { type triSurfaceMesh; name fin2; } // Centre fin; contains the temperature probe.
+    fin3.stl { type triSurfaceMesh; name fin3; } // Fourth fin; separate CAD surface for refinement.
+    fin4.stl { type triSurfaceMesh; name fin4; } // Fifth fin; separate CAD surface for refinement.
+}
+
+castellatedMeshControls
+{
+    maxLocalCells 250000;          // Bound memory per processor for a small workstation case.
+    maxGlobalCells 2000000;        // Stop refinement before an unexpectedly large mesh is built.
+    minRefinementCells 10;         // Avoid further refinement when only isolated cells remain.
+    nCellsBetweenLevels 2;         // Smooth cell-size transitions without excessive buffer cells.
+    maxLoadUnbalance 0.10;         // Limit temporary imbalance if meshing is run in parallel.
+    allowFreeStandingZoneFaces true; // Retain closed solid-volume zone boundaries for region splitting.
+    resolveFeatureAngle 30;        // Resolve fin edges sharper than this angle.
+    features ();                   // The generated boxes are axis-aligned; implicit snapping is sufficient.
+
+    refinementSurfaces
+    {
+        pcb
+        {
+            level (1 1);           // Target 1.5 mm / 2 = 0.75 mm cells at the board surface.
+            faceZone pcb;          // Preserve a named solid-air/interface face zone.
+            cellZone pcb;          // Create the FR4 region for splitMeshRegions.
+            cellZoneInside inside; // Classify cells enclosed by this watertight STL as solid.
+        }
+        cpu
+        {
+            level (1 1);           // Resolve the package footprint with the local fine mesh.
+            faceZone cpu;          // Preserve the CPU's solid boundary for region splitting.
+            cellZone cpu;          // Create the silicon region and source-selection zone.
+            cellZoneInside inside; // Keep the volume inside the closed package.
+        }
+        aluminumBase
+        {
+            level (1 1);           // Resolve the base-to-CPU contact footprint.
+            faceZone aluminumBase; // Preserve the base's solid interface faces.
+            cellZone aluminum;     // Base and fins share one aluminium material region.
+            cellZoneInside inside; // Classify the base interior as solid aluminium.
+        }
+        fin0
+        {
+            level (1 1);           // Four nominal cells across each 3 mm air channel.
+            faceZone fin0;         // Preserve fin faces as fluid-solid interface faces.
+            cellZone aluminum;     // Join the connected fin volume to the aluminium base region.
+            cellZoneInside inside; // Classify fin interior as solid.
+        }
+        fin1
+        {
+            level (1 1);           // Preserve the same nominal channel cell width between fins.
+            faceZone fin1;         // Preserve fin faces as fluid-solid interface faces.
+            cellZone aluminum;     // Use the same thermal material as the base.
+            cellZoneInside inside; // Classify fin interior as solid.
+        }
+        fin2
+        {
+            level (1 1);           // Resolve the central fin where the heatsink probe is placed.
+            faceZone fin2;         // Preserve fin faces as fluid-solid interface faces.
+            cellZone aluminum;     // Join the central fin into the aluminium thermal region.
+            cellZoneInside inside; // Classify fin interior as solid.
+        }
+        fin3
+        {
+            level (1 1);           // Maintain consistent cell size in all channels.
+            faceZone fin3;         // Preserve fin faces as fluid-solid interface faces.
+            cellZone aluminum;     // Use the common aluminium region.
+            cellZoneInside inside; // Classify fin interior as solid.
+        }
+        fin4
+        {
+            level (1 1);           // Maintain consistent cell size at the outer channel.
+            faceZone fin4;         // Preserve fin faces as fluid-solid interface faces.
+            cellZone aluminum;     // Use the common aluminium region.
+            cellZoneInside inside; // Classify fin interior as solid.
+        }
+    }
+
+    refinementRegions {};          // Surface levels suffice for this compact benchmark.
+
+    locationInMesh (0.035 0.030 0.020); // Keep the connected enclosure-fluid region; solid cellZones remain separate.
+}
+
+snapControls
+{
+    nSmoothPatch 3;                // Smooth cut patches before point projection.
+    tolerance 1.0;                 // Snap search distance in local cell-length units.
+    nSolveIter 30;                 // Allow mesh points to relax to the triangulated surfaces.
+    nRelaxIter 5;                  // Stabilize snapping on narrow fin features.
+    nFeatureSnapIter 10;           // Iterate implicit feature snapping around sharp fin edges.
+    implicitFeatureSnap true;      // Detect geometric edges without requiring extracted eMesh files.
+    explicitFeatureSnap false;    // No separately extracted feature lines are shipped.
+    multiRegionFeatureSnap true;   // Preserve intersections where distinct solid regions touch.
+}
+
+addLayersControls
+{
+    relativeSizes true;            // Layer thicknesses are fractions of local cell size.
+    layers
+    {
+        "(pcb|cpu|aluminumBase|fin[0-4])"
+        {
+            nSurfaceLayers 1;      // One prism layer is the conservative starting point for this small mesh.
+        }
+    }
+    expansionRatio 1.2;            // Moderate growth limits abrupt changes through a thin boundary layer.
+    firstLayerThickness 0.3;       // First layer target as a fraction of the adjacent cell size.
+    minThickness 0.2;              // Collapse layers below this local-size fraction rather than make slivers.
+    nGrow 0;                       // Do not propagate layers around sharp fin corners.
+    featureAngle 60;               // Avoid layer extrusion through sharp fin edges.
+    slipFeatureAngle 30;            // Permit limited layer sliding near geometric features.
+    nRelaxIter 5;                  // Relax layer placement after quality checks.
+    nSmoothSurfaceNormals 3;       // Smooth normals to reduce abrupt layer direction changes.
+    nSmoothNormals 3;              // Smooth displacement normals across adjacent faces.
+    nSmoothThickness 5;            // Smooth layer thickness along each fin face.
+    maxFaceThicknessRatio 0.5;     // Avoid layers that dominate a local face dimension.
+    maxThicknessToMedialRatio 0.3; // Prevent opposite wall layers from colliding in narrow channels.
+    minMedialAxisAngle 90;         // Use the standard conservative medial-axis limit.
+    nBufferCellsNoExtrude 0;       // Do not suppress extrusion with extra buffer cells.
+    nLayerIter 30;                 // Cap layer insertion work on a fine CAD surface.
+    nRelaxedIter 10;               // Permit additional relaxed iterations if layer quality is marginal.
+}
+
+meshQualityControls
+{
+    #include "meshQualityDict"     // Centralize hard quality limits for checkMesh and snappyHexMesh.
+}
+
+debug 0;                           // Keep normal run logs concise.
+mergeTolerance 1e-6;               // Merge only points coincident within a tiny fraction of the metre-scale case.

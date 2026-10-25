@@ -1,0 +1,51 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 reference CHT case                                    |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                 // Standard dictionary format version.
+    format ascii;                // Keep the base mesh inspectable in version control.
+    class dictionary;            // blockMesh reads a dictionary.
+    object blockMeshDict;        // Required dictionary object name.
+}
+
+scale 1;                         // Coordinates are already in metres.
+
+vertices
+(
+    (-0.045 -0.045 0.000)       // Lower enclosure corner; gives 90 mm width.
+    ( 0.045 -0.045 0.000)       // Lower enclosure corner in +x.
+    ( 0.045  0.045 0.000)       // Lower enclosure corner in +x,+y.
+    (-0.045  0.045 0.000)       // Lower enclosure corner in +y.
+    (-0.045 -0.045 0.048)      // Upper enclosure corner; gives 48 mm height.
+    ( 0.045 -0.045 0.048)      // Upper enclosure corner in +x.
+    ( 0.045  0.045 0.048)      // Upper enclosure corner in +x,+y.
+    (-0.045  0.045 0.048)      // Upper enclosure corner in +y.
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (60 60 32) simpleGrading (1 1 1)
+    // 1.5 mm base cells align to the idealized geometry; level-1 cells are 0.75 mm.
+);
+
+edges ();                        // Straight edges suffice for a rectangular air box.
+
+boundary
+(
+    ambientWalls
+    {
+        type wall;               // No-slip enclosure for a sealed natural-convection cavity.
+        faces
+        (
+            (0 4 7 3)            // x-min wall.
+            (1 2 6 5)            // x-max wall.
+            (0 1 5 4)            // y-min wall.
+            (3 7 6 2)            // y-max wall.
+            (0 3 2 1)            // z-min wall.
+            (4 5 6 7)            // z-max wall.
+        );
+    }
+);
+
+mergePatchPairs ();              // The single block has no coincident patches to merge.

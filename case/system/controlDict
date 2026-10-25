@@ -1,0 +1,46 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 reference CHT case                                    |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                    // Standard dictionary format version.
+    format ascii;                   // Readable settings support reproducibility.
+    class dictionary;               // controlDict class.
+    object controlDict;             // Required object name.
+}
+
+application chtMultiRegionSimpleFoam; // Steady pressure-based CHT solver.
+startFrom startTime;                // Start a fresh reference run from time zero.
+startTime 0;                        // Initial pseudo-time for steady SIMPLE iterations.
+stopAt endTime;                     // Stop after the iteration budget unless convergence is met earlier.
+endTime 400;                        // Practical first-run cap; increase if residuals/probes are not stable.
+deltaT 1;                           // One unit per steady outer iteration; not a physical transient time step.
+writeControl timeStep;              // Write on a reproducible iteration interval.
+writeInterval 10;                   // Save every ten iterations for probes and restart.
+purgeWrite 0;                       // Preserve all written states for convergence assessment.
+writeFormat ascii;                  // Keep output inspectable and portable.
+writePrecision 8;                   // Retain useful precision in sampled temperatures.
+writeCompression off;               // Avoid compression overhead for this small educational case.
+timeFormat general;                 // Use compact numeric time-directory names.
+timePrecision 8;                    // Prevent adjacent iteration labels from colliding.
+runTimeModifiable true;             // Permit tuning relaxation/controls during development.
+
+functions
+{
+    cpuCoreTemperature
+    {
+        type probes;                // Sample the die interior for a convergence history.
+        libs ("libsampling.so");    // Load OpenFOAM's standard sampling function objects.
+        region cpu;                 // Probe the silicon region rather than the air field.
+        fields (T);                 // Record temperature only.
+        probeLocations ((0 0 0.00675)); // CPU-centre point, in metres and inside the CPU STL.
+    }
+    heatsinkBaseTemperature
+    {
+        type probes;                // Sample the aluminium base under the middle fin.
+        libs ("libsampling.so");    // Use the standard probe implementation.
+        region aluminum;            // Probe the combined base-and-fin solid region.
+        fields (T);                 // Record temperature only.
+        probeLocations ((0 0 0.00825)); // Base-centre point, in metres and inside aluminium.
+    }
+}

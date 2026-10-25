@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+for application in blockMesh snappyHexMesh splitMeshRegions \
+    checkMesh chtMultiRegionSimpleFoam
+do
+    command -v "$application" >/dev/null 2>&1 || {
+        printf 'Required OpenFOAM command not found: %s\n' "$application" >&2
+        printf 'Source the OpenFOAM.com v2512 environment before running Allrun.\n' >&2
+        exit 127
+    }
+done
+
+if [[ "${WM_PROJECT_VERSION:-}" != v2512 ]]; then
+    printf 'Expected OpenFOAM.com v2512 (WM_PROJECT_VERSION=v2512); found %s.\n' \
+        "${WM_PROJECT_VERSION:-unset}" >&2
+    exit 2
+fi
+
+python3 ../scripts/generate_geometry.py
+blockMesh 2>&1 | tee log.blockMesh
+snappyHexMesh -overwrite 2>&1 | tee log.snappyHexMesh
+splitMeshRegions -cellZones -overwrite 2>&1 | tee log.splitMeshRegions
+for region in domain0 pcb cpu aluminum; do
+    mkdir -p "system/$region"
+    cp "system/regionTemplates/fvSchemes" "system/$region/fvSchemes"
+    cp "system/regionTemplates/fvSolution" "system/$region/fvSolution"
+done
+mkdir -p 0
+cp -a 0.orig/. 0/
+checkMesh -allRegions 2>&1 | tee log.checkMesh
+if grep -Eq 'Failed [1-9][0-9]* mesh checks' log.checkMesh; then
+    printf 'Mesh quality checks failed; inspect log.checkMesh before solving.\n' >&2
+    exit 1
+fi
+chtMultiRegionSimpleFoam 2>&1 | tee log.chtMultiRegionSimpleFoam
+printf 'Solver exited normally. Verify residuals, temperature probes, and energy balance; endTime alone is not convergence.\n'

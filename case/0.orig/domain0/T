@@ -1,0 +1,47 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Initial air temperature field                                              |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard field format version.
+    format ascii;                 // Text fields are easy to inspect.
+    class volScalarField;         // Temperature is a cell-centred scalar.
+    object T;                     // Required field name.
+}
+
+dimensions [0 0 0 1 0 0 0];        // Temperature dimensions in kelvin.
+internalField uniform 300;         // Initialize enclosure air at ambient temperature.
+boundaryField
+{
+    ambientWalls { type fixedValue; value uniform 300; } // Controlled enclosure ambient.
+    domain0_to_pcb
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple fluid conduction to FR4.
+        Tnbr T;                    // Adjacent solid field is also named T.
+        kappaMethod fluidThermo;   // Read conductivity from the local air thermodynamics.
+        qr none;                   // Radiation is excluded from this baseline.
+        qrNbr none;                // No radiative neighbour field is supplied.
+        useImplicit true;          // Implicit coupling stabilizes solid-fluid heat exchange.
+        value uniform 300;         // Initial patch value for the mixed boundary condition.
+    }
+    domain0_to_cpu
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple air directly to package surfaces.
+        Tnbr T;                    // Adjacent silicon field name.
+        kappaMethod fluidThermo;   // Use air-side conductivity for this region.
+        qr none;                   // Radiation is intentionally omitted.
+        qrNbr none;                // No neighbour radiation field is present.
+        useImplicit true;          // Implicit exchange improves multi-region stability.
+        value uniform 300;         // Consistent initial interface temperature.
+    }
+    domain0_to_aluminum
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple air to the base and fin faces.
+        Tnbr T;                    // Adjacent aluminium temperature field name.
+        kappaMethod fluidThermo;   // Use fluid-side conductivity for the interface.
+        qr none;                   // Radiation is excluded by assumption.
+        qrNbr none;                // No radiative flux is supplied by another region.
+        useImplicit true;          // Stabilize the high-conductivity aluminium coupling.
+        value uniform 300;         // Initial value for the coupled patch.
+    }
+}

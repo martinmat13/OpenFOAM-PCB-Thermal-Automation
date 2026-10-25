@@ -1,0 +1,23 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 volumetric CPU power                                    |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard dictionary format version.
+    format ascii;                 // Readable source-term settings.
+    class dictionary;             // fvOptions dictionary class.
+    object fvOptions;             // Required object name.
+}
+
+cpuPower
+{
+    type scalarSemiImplicitSource; // Add a scalar source to the CPU enthalpy equation.
+    active true;                  // Enable the specified CPU heat load.
+    selectionMode cellZone;       // Restrict power to the CPU's tagged volume.
+    cellZone cpu;                 // Match the CPU surface's cellZone name.
+    volumeMode absolute;          // Interpret the integrated source as total watts.
+    sources
+    {
+        h (35 0);                  // Deposit 35 W in h with zero implicit coefficient.
+    }
+}

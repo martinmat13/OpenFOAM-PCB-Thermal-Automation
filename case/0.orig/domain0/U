@@ -1,0 +1,20 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Initial air velocity field                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard field format version.
+    format ascii;                 // Text field for review.
+    class volVectorField;         // Velocity is a cell-centred vector.
+    object U;                     // Required velocity field name.
+}
+
+dimensions [0 1 -1 0 0 0 0];       // Velocity dimensions in m/s.
+internalField uniform (0 0 0);     // Start from quiescent air; buoyancy develops the flow.
+boundaryField
+{
+    ambientWalls { type fixedValue; value uniform (0 0 0); } // Stationary sealed enclosure walls.
+    domain0_to_pcb { type fixedValue; value uniform (0 0 0); } // No-slip on solid FR4.
+    domain0_to_cpu { type fixedValue; value uniform (0 0 0); } // No-slip on the silicon package.
+    domain0_to_aluminum { type fixedValue; value uniform (0 0 0); } // No-slip on heatsink surfaces.
+}

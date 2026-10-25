@@ -1,0 +1,53 @@
+solvers
+{
+    rho
+    {
+        solver PCG;                 // Symmetric positive density equation solver.
+        preconditioner DIC;         // Incomplete-Cholesky preconditioning for scalar density.
+        tolerance 1e-8;             // Tight absolute solve tolerance for stable buoyancy coupling.
+        relTol 0;                   // Fully converge each linear density solve.
+    }
+    p_rgh
+    {
+        solver GAMG;                // Multigrid is effective for the global pressure correction.
+        tolerance 1e-7;             // Resolve weak natural-convection pressure differences.
+        relTol 0.01;                // Permit a 1% relative residual reduction per SIMPLE iteration.
+        smoother GaussSeidel;       // Robust smoother for pressure on an unstructured mesh.
+    }
+    "(U|h)"
+    {
+        solver PBiCGStab;           // Robust nonsymmetric solver for momentum and enthalpy.
+        preconditioner DILU;        // Low-memory preconditioning suitable for a workstation mesh.
+        tolerance 1e-8;             // Limit equation error in coupled energy and momentum.
+        relTol 0.05;                // Allow efficient early iterations while residuals are high.
+    }
+}
+
+SIMPLE
+{
+    momentumPredictor true;         // Solve momentum before each pressure correction.
+    nNonOrthogonalCorrectors 1;     // Add one pressure correction for snapped non-orthogonal cells.
+    frozenFlow false;               // Couple buoyant flow and temperature rather than freeze velocity.
+    pRefCell 0;                      // Fix the pressure null space for the sealed enclosure.
+    pRefValue 101325;                // Set the gauge reference to ambient absolute pressure.
+    residualControl
+    {
+        p_rgh 1e-6;                  // Require pressure residual convergence before stopping.
+        U 1e-7;                      // Require velocity residual convergence.
+        h 1e-8;                      // Require a tighter thermal residual for the design objective.
+    }
+}
+
+relaxationFactors
+{
+    fields
+    {
+        p_rgh 0.3;                   // Damp pressure updates for stable buoyant SIMPLE coupling.
+        rho 0.5;                     // Damp density feedback from temperature.
+    }
+    equations
+    {
+        U 0.5;                       // Under-relax velocity in the weakly forced cavity.
+        h 0.7;                       // Keep thermal convergence responsive but bounded.
+    }
+}

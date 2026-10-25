@@ -1,0 +1,46 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Initial CPU die temperature field                                            |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard field format version.
+    format ascii;                 // Text field for review.
+    class volScalarField;         // Temperature is a cell-centred scalar.
+    object T;                     // Required silicon temperature field.
+}
+
+dimensions [0 0 0 1 0 0 0];        // Temperature dimensions in kelvin.
+internalField uniform 300;         // Start the powered die at ambient for a clean ramp to steady state.
+boundaryField
+{
+    cpu_to_domain0
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple exposed package sides to air.
+        Tnbr T;                    // Adjacent air temperature field name.
+        kappaMethod solidThermo;   // Use silicon conductivity on this side.
+        qr none;                   // Exclude radiation.
+        qrNbr none;                // No radiative neighbour field exists.
+        useImplicit true;          // Stabilize conjugate heat-flux exchange.
+        value uniform 300;         // Initial coupled-patch temperature.
+    }
+    cpu_to_pcb
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple the package underside to FR4.
+        Tnbr T;                    // Adjacent PCB temperature field name.
+        kappaMethod solidThermo;   // Use silicon conductivity on this side.
+        qr none;                   // Exclude radiation.
+        qrNbr none;                // No radiative neighbour field exists.
+        useImplicit true;          // Couple high silicon conductivity robustly.
+        value uniform 300;         // Initial interface temperature.
+    }
+    cpu_to_aluminum
+    {
+        type compressible::turbulentTemperatureRadCoupledMixed; // Couple the die top to the heatsink base.
+        Tnbr T;                    // Adjacent aluminium temperature field name.
+        kappaMethod solidThermo;   // Use silicon conductivity on the CPU side.
+        qr none;                   // Exclude radiation.
+        qrNbr none;                // No radiative neighbour field exists.
+        useImplicit true;          // Stabilize the solid-solid interface calculation.
+        value uniform 300;         // Initial interface temperature.
+    }
+}

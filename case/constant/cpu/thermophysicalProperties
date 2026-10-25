@@ -1,0 +1,44 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 silicon reference properties                            |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard dictionary format version.
+    format ascii;                 // Readable material properties.
+    class dictionary;             // Thermophysical model dictionary.
+    object thermophysicalProperties; // Solver-required object name.
+}
+
+thermoType
+{
+    type heSolidThermo;           // Solid enthalpy model for die conduction.
+    mixture pureMixture;          // Use homogeneous silicon for the example die.
+    transport constIso;           // Constant isotropic silicon conductivity.
+    thermo hConst;                // Constant heat capacity for the baseline.
+    equationOfState rhoConst;     // Density is fixed for a solid.
+    specie specie;                // One silicon species.
+    energy sensibleEnthalpy;      // Solve sensible enthalpy.
+}
+
+mixture
+{
+    specie
+    {
+        nMoles 1;                 // One mole basis for this effective solid.
+        molWeight 28.085;          // Silicon molecular weight in kg/kmol.
+    }
+    thermodynamics
+    {
+        Hf 0;                     // Formation enthalpy is not used.
+        Sf 0;                     // Formation entropy is not used.
+        Cp 700;                   // Representative silicon heat capacity in J/(kg K).
+    }
+    transport
+    {
+        kappa 130;                // Representative bulk silicon conductivity in W/(m K).
+    }
+    equationOfState
+    {
+        rho 2329;                 // Silicon density in kg/m^3.
+    }
+}

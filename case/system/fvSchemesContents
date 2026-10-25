@@ -1,0 +1,40 @@
+ddtSchemes
+{
+    default steadyState;            // Solve the steady operating point, not a transient.
+}
+
+gradSchemes
+{
+    default Gauss linear;           // Second-order cell-gradient reconstruction.
+}
+
+divSchemes
+{
+    default none;                   // Require each active equation's flux scheme explicitly.
+    div(phi,U) bounded Gauss upwind; // Robust bounded momentum convection for startup.
+    div(phi,h) bounded Gauss upwind; // Robust enthalpy transport through weak buoyant recirculation.
+    div(phi,K) bounded Gauss upwind; // Supply the kinetic-energy flux used by the pressure correction.
+    div(phid,p) Gauss upwind;       // Stable pressure-flux interpolation for the compressible formulation.
+    div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear; // Linear viscous-stress divergence.
+}
+
+laplacianSchemes
+{
+    default Gauss linear limited 0.333; // Limit non-orthogonal correction on snapped cut cells.
+}
+
+interpolationSchemes
+{
+    default linear;                 // Linear face interpolation for diffusion and fluxes.
+}
+
+snGradSchemes
+{
+    default limited 0.333;          // Limit surface-normal gradients on non-orthogonal faces.
+}
+
+fluxRequired
+{
+    default no;                     // Avoid creating unnecessary pressure flux fields.
+    p_rgh;                          // Pressure correction requires its face flux.
+}

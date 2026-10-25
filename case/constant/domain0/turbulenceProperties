@@ -1,0 +1,12 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 flow-model selection                                    |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                  // Standard dictionary format version.
+    format ascii;                 // Human-readable flow-model choice.
+    class dictionary;             // Turbulence-properties dictionary.
+    object turbulenceProperties; // Required object name for the air region.
+}
+
+simulationType laminar;           // Baseline natural-convection cavity is modeled as laminar.

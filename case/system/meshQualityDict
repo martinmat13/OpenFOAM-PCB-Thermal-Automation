@@ -1,0 +1,25 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM.com v2512 reference CHT case                                    |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version 2.0;                   // Standard dictionary format version.
+    format ascii;                  // Human-readable quality limits.
+    class dictionary;              // Mesh quality dictionary class.
+    object meshQualityDict;         // Required object name.
+}
+
+maxNonOrtho 65;                    // Reject cells beyond the conventional 65-degree limit.
+maxBoundarySkewness 20;            // Permit cut-surface skewness up to the common snappy limit.
+maxInternalSkewness 4;             // Keep internal cells tighter than surface-cut cells.
+maxConcave 80;                     // Limit concave cells to protect diffusion accuracy.
+minVol 1e-15;                      // Reject zero/near-zero volumes in this metre-scale domain.
+minTetQuality 1e-30;               // Avoid degenerate tetrahedral decomposition.
+minArea -1;                         // Do not impose a separate absolute face-area cutoff.
+minTwist 0.02;                      // Reject severely twisted faces.
+minDeterminant 0.001;               // Require positive, well-shaped cell Jacobians.
+minFaceWeight 0.02;                 // Prevent interpolation weights collapsing to zero.
+minVolRatio 0.01;                   // Limit abrupt neighbouring cell-volume changes.
+minTriangleTwist -1;                // Defer triangle-specific checks to broader quality metrics.
+nSmoothScale 4;                     // Smooth local mesh motion over four neighbouring-cell bands.
+errorReduction 0.75;                // Reduce displacement when a quality limit is exceeded.
